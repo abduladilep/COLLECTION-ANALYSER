@@ -1,25 +1,15 @@
 import React from "react";
 import { Box, Button, TextField, useMediaQuery } from "@mui/material";
-import { Formik } from "formik";
+import { Field, Formik } from "formik";
 import * as Yup from "yup";
 // import UseMediaQuery from "@mui/material/useMediaQuery";
 import Header from "../components/Header";
-import { useState } from "react";
+import { useState} from "react";
+import { addWeeks } from '@progress/kendo-date-math';
+import moment from 'moment';
+import { addUser } from "../../redux/Actions/userActions";
 
-const initialValues = {
-  Name: "",
-  MobileNo: "",
-  Address: "",
-  GivenAmount: "",
-  TotalAmount: "",
-  InterestAmount: "",
-  InterestPercentage: "",
-  // profitPercentage: "",
-  CollectionAmount: "",
-  idProof: "",
-  photo: "",
-  collectionDate: "",
-};
+
 
 const phoneRegExp = /^((\+[1-9]{1,4}[ -]?)|(\([0-9]{2,3}\)[ -]?)|([0-9]{2,4})[ -]?)*?[0-9]{3,4}[ -]?[0-9]{3,4}$/;
 
@@ -38,6 +28,13 @@ const userSchema = Yup.object().shape({
     .positive()
     .integer()
     .required("Please Enter the amount to give"),
+
+    collectionPeriod: Yup.number()
+    // .positive()
+    // .integer()
+    // .required("Please Enter the Collection period")
+    ,
+
   InterestAmount: Yup.number()
     .positive()
     .integer()
@@ -46,7 +43,7 @@ const userSchema = Yup.object().shape({
 
   InterestPercentage: Yup.number()
     .positive("Profit percentage must be a number")
-    .integer("Profit percentage must be a integer")
+    // .integer("Profit percentage must be a integer")
     .test(
       "is-percentage",
       "profit percentage must be between 0 and 100",
@@ -60,7 +57,7 @@ const userSchema = Yup.object().shape({
 
     CollectionAmount: Yup.number()
     .positive()
-    .integer()
+    // .integer()
     .required("Please Enter the amount"),
 
   photo: Yup.mixed()
@@ -105,9 +102,34 @@ const userSchema = Yup.object().shape({
     .required("Please upload an ID proof image"),
 
     collectionDate: Yup.date()
-  .typeError("Please enter a valid date")
-  .required("Please enter a collection date"),
+  // .typeError("Please enter a valid date")
+  // .required("Please enter a collection date")
+  ,
+
+  collectionEndDate: Yup.date()
+  // .typeError("Please enter a valid date")
+  // .required("Please enter a collection date"),
+
 });
+
+
+const initialValues = {
+  Name: "",
+  MobileNo: "",
+  Address: "",
+  GivenAmount: "",
+  TotalAmount: "",
+  InterestAmount: "",
+  InterestPercentage: "",
+  // profitPercentage: "",
+  CollectionAmount: "",
+  idProof: "", 
+  photo: "",
+  collectionDate: new Date(),
+  collectionPeriod: 2,
+  collectionEndDate: addWeeks(new Date(), 2)
+};
+
 
 const Form = () => {
 
@@ -115,16 +137,20 @@ const Form = () => {
   const [photoPreview, setPhotoPreview] = useState(); 
   const [idPreview, setidPreview] = useState();// add state to preview uploaded photo
   const [Date,setDate]=useState(); // add state to  collection date
+  const [endDate,setEndDate]=useState(); // add state to  collection date
+
 
   const handleFormSubmit = (values) => {
    
     console.log(values.TotalAmount, "Totalamountttttttttt");
-
+    
     console.log("onn work avbvvvvv mone", values);
-    values.preventDefault();
+    // values.preventDefault();
     const form = new FormData();
     form.append("file", values);
     form.append("filee", values);
+    console.log("onn work avbvvvvv mone", form);
+
  
 
 
@@ -133,25 +159,72 @@ const Form = () => {
 
   //  const handleDate = (evnt) => {
 
-  //   const date =evnt.target.value
-  //   console.log(date,"dateeeeee");
-  //   setDate(date);
+    // const date = new Date("2000-10-1");
+    // const newDate = addWeeks(date, 10); // Returns a new Date instance.
+
+    // console.log("newwwd dta",newDate);
+  //  console.log("hello");
+  //  const enddate=values.collectionDate+(values.collectionPeriod*7*24*60*60*1000)
+  //  console.log(enddate,"eeedddddd");
 
   //  }
-   console.log(Date,"ddddddd");
+  //  console.log(endDate,"eeedddddd");
 
   //   // update formik field value
 
   // }
 
 
+  // const handleDateChange = (values, setFieldValue) => {
+  //   const endDate = addWeeks(values.collectionDate, values.collectionPeriod);
+  //   setFieldValue('collectionEndDate', endDate);
+  // };
+  // const handleDateChange = (values, setFieldValue) => {
+  //   const { collectionDate, collectionPeriod } = values;
+  //   const isValidDate = moment(collectionDate, "YYYY-MM-DD", true).isValid();
+  
+  //   if (isValidDate) {
+  //     const endDate = addWeeks((new Date(collectionDate), collectionPeriod));
+  //     setFieldValue("collectionEndDate", endDate);
+  //   } else {
+  //     // handle invalid date error
+  //   }
+  // };
 
-
+  
 
   // const handleUpload = async () => {
   //   const form = new FormData();
   //   form.append("file", file); // use file state in form data
   // }
+
+
+  const handleDateChange = (values, setFieldValue) => {
+        const { collectionDate, collectionPeriod } = values;
+        console.log("cvghvsghv",values);
+        
+        console.log(typeof collectionDate,"tuuuuuuuyyyyypppeee");
+
+        
+      
+        // Check that collectionDate is not null or undefined
+        if (!collectionDate) {
+          console.log("cvghvsghv");
+          return;
+    
+    
+        }
+      
+        // const endDate = addWeeks(collectionDate, collectionPeriod);
+        // const newEndDate= moment(endDate).format('YYYY-MM-DD');
+        // setFieldValue('collectionEndDate', newEndDate);
+        // console.log(newEndDate,"endddddddd");
+    
+        const endDate = addWeeks(collectionDate, collectionPeriod);
+        setFieldValue('collectionEndDate', endDate);
+        console.log(endDate,"endddddddd");
+      };
+
 
   return (
     <Box m="20px">
@@ -164,6 +237,7 @@ const Form = () => {
       >
         {({
           values,
+        
           errors,
           touched,
           handleBlur,
@@ -285,14 +359,20 @@ const Form = () => {
                 label="Collection Amount"
                 onBlur={handleBlur}
                 onChange={handleChange}
-                Value={values.CollectionAmount}
+                // Value={values.CollectionAmount}
+                value={ values.CollectionAmount=(values.TotalAmount) /values.collectionPeriod }
+
                 name="CollectionAmount"
                 error={!!touched.CollectionAmount && !!errors.CollectionAmount}
                 helperText={touched.CollectionAmount && errors.CollectionAmount}
                 sx={{ gridColumn: "span 2" }}
               />
+{/* 
+<Field name="collectionDate">
+                {({field})=>(
 
                <TextField
+               {...field}
                 fullWidth
                 name="collectionDate"
                 variant="filled"
@@ -300,16 +380,114 @@ const Form = () => {
                 label="COLLECTION STARTING DATE"
                 Value={Date}
                 onBlur={handleBlur}
+                format="yyyy,MM,dd"
+                
                 // onChange={handleDate}
                 onChange={(event) => {
-                  setFieldValue("collectionDate", event.target.value);
-                  setDate(event.target.value)
-                }
+                  Formik.setFieldValue("collectionDate", moment(event.target.value).format("yyyy,MM,dd"));
+                  
+                  handleDateChange(
+                    {...values,collectionDate:moment(event.target.value).format("yyyy,MM,dd")},
+                    setFieldValue
+                    );
+                    setDate(event.target.value)
+                  }
               }
                 error={!!touched.collectionDate && !!errors.collectionDate}
                 helperText={touched.collectionDate && errors.collectionDate} 
               //  sx={{ gridColumn: "span 2" }} 
-               />
+               /> */}
+            {/* )}
+               </Field> */}
+               <Field name="collectionDate">
+  {({ field, form }) => (
+    <TextField
+      {...field}
+      fullWidth
+      name="collectionDate"
+      variant="filled"
+      type="date"
+      label="COLLECTION STARTING DATE"
+      value={Date}
+      onBlur={field.onBlur}
+      onChange={(event) => {
+        const formattedDate = moment(event.target.value).format("yyyy-MM-DD");
+        console.log(formattedDate,"formattedDate");
+        form.setFieldValue("collectionDate", formattedDate);
+        console.log(typeof formattedDate,"formtated date");
+
+        handleDateChange(
+          {...form.values, collectionDate: formattedDate},
+          form.setFieldValue
+        );
+        setDate(event.target.value);
+      }}
+      error={form.touched.collectionDate && !!form.errors.collectionDate}
+      helperText={form.touched.collectionDate && form.errors.collectionDate}
+    />
+  )}
+</Field>
+
+
+               <Field name="CollectionPeriod">
+                {({field})=>(
+
+               <TextField
+               {...field}
+                fullWidth
+                variant="filled"
+                type="text"
+                label="CollectionPeriod"
+                onBlur={handleBlur}
+                // onChange={handleChange}
+              
+                value={values.collectionPeriod}
+                name="collectionPeriod"
+                // error={!!touched.Period && !!errors.Period}
+                // helperText={touched.Period && errors.Period}
+                // sx={{ gridColumn: "span 1" }}
+                onChange={(event) => {
+                  setFieldValue('collectionPeriod', event.target.value);
+                  handleDateChange(
+                    { ...values, collectionPeriod: event.target.value },
+                    setFieldValue
+                  );
+                }}
+                />
+                )}
+                </Field>
+              
+                <Field name="collectionEndDate">
+                {({field})=>(
+
+               <TextField
+               {...field}
+                fullWidth
+                name="collectionEndDate"
+                variant="filled"
+                type="Date"
+                label="Collection End Date"
+                Value={endDate}
+                onBlur={handleBlur}
+                // onChange={field.onChange}
+                // onChange={(event) => {
+                //   setFieldValue("collectionEndDate", event.target.value);
+
+                //   const adWeeks=addWeeks((values.collectionDate,values.CollectionPeriod))
+
+                //   setEndDate(adWeeks)
+                  
+
+                // }
+              // }
+                error={!!touched.collectionEndDate && !!errors.collectionEndDate}
+                helperText={touched.collectionEndDate && errors.collectionEndDate} 
+              //  sx={{ gridColumn: "span 2" }} 
+              
+            
+            />
+            )}
+            </Field>
 
 
               <Box
@@ -430,3 +608,149 @@ const Form = () => {
 };
 
 export default Form;
+
+
+// import React from 'react';
+// import { addWeeks } from '@progress/kendo-date-math';
+// import { Formik, Form, Field } from 'formik';
+// // import { TextField } from '@material-ui/core';
+// import { Box, Button, TextField, useMediaQuery } from "@mui/material";
+// // import * as Yup from "yup";
+// // import Header from "../components/Header";
+// import { useState} from "react";
+// import moment from 'moment';
+
+
+//  function form() {
+//   const initialValues = {
+//     collectionDate: new Date(),
+//     collectionPeriod: 0,
+//     collectionEndDate: addWeeks(new Date(),0)
+//   };
+
+//   // const handleDateChange = (values, setFieldValue) => {
+//   //   const endDate = addWeeks(values.collectionDate, values.collectionPeriod);
+//   //   setFieldValue('collectionEndDate', endDate);
+//   // };
+//   const handleDateChange = (values, setFieldValue) => {
+//     const { collectionDate, collectionPeriod } = values;
+//     console.log("cvghvsghv",values);
+    
+  
+//     // Check that collectionDate is not null or undefined
+//     if (!collectionDate) {
+//       console.log("cvghvsghv");
+//       return;
+
+
+//     }
+  
+//     const endDate = addWeeks(collectionDate, collectionPeriod);
+//     const newEndDate= moment(endDate).format('YYYY-MM-DD');
+//     setFieldValue('collectionEndDate', newEndDate);
+//     console.log(newEndDate,"endddddddd");
+
+//     // const endDate = addWeeks(collectionDate, collectionPeriod);
+//     // setFieldValue('collectionEndDate', endDate);
+//     // console.log(endDate,"endddddddd");
+//   };
+  
+//   const handleSubmit = (values) => {
+//     console.log(values);
+//   };
+
+//   return (
+//     <Formik initialValues={initialValues} onSubmit={handleSubmit}>
+//       {({ values, setFieldValue }) => (
+//         <Form>
+//           <Field name="collectionDate">
+//             {({ field }) => (
+//               <TextField
+//                 {...field}
+//                 fullWidth
+//                 name="collectionDate"
+//                 variant="filled"
+//                 type="Date"
+//                 label="Collection Date"
+//                 onBlur={field.onBlur}
+//                 onChange={(event) => {
+//                   console.log(event.target.value,"onchange");
+//                   setFieldValue('collectionDate', event.target.value);
+//                   handleDateChange(
+//                     { ...values, collectionDate:event.target.value },
+//                     setFieldValue
+//                   );
+//                 }}
+//               />
+//             )}
+//           </Field>
+
+//           <Field name="collectionPeriod">
+//             {({ field }) => (
+//               <TextField
+//                 {...field}
+//                 fullWidth
+//                 name="collectionPeriod"
+//                 variant="filled"
+//                 type="number"
+//                 label="Collection Period (in weeks)"
+//                 onBlur={field.onBlur}
+//                 onChange={(event) => {
+//                   setFieldValue('collectionPeriod', event.target.value);
+//                   // handleDateChange(
+//                   //   { ...values, collectionPeriod: event.target.value },
+//                   //   setFieldValue
+//                   // );
+//                 }}
+//               />
+//             )}
+//           </Field>
+
+//           <Field name="collectionEndDate">
+//             {({ field }) => (
+//               <TextField
+//                 {...field}
+//                 fullWidth
+//                 name="collectionEndDate"
+//                 variant="filled"
+//                 type="Date"
+//                 label="Collection End Date"
+//                 onBlur={field.onBlur}
+//                 onChange={(event) => {
+//                   const handleDateChange = (values, setFieldValue) => {
+//                     const { collectionDate, collectionPeriod } = values;
+//                     console.log("cvghvsghv",values);
+                    
+                  
+                   
+
+//                     if (!collectionDate) {
+//                       console.log("cvghvsghv");
+//                       return;
+                
+                
+//                     }
+                  
+//                     const endDate = addWeeks(collectionDate, collectionPeriod);
+//                     const newEndDate= moment(endDate).format('YYYY-MM-DD');
+//                     setFieldValue('collectionEndDate', newEndDate);
+//                     console.log(newEndDate,"endddddddd");
+                
+                
+//                   };
+
+//                 }
+
+//                 }
+//               />
+//             )}
+//           </Field>
+
+//           <button type="submit">Submit</button>
+//         </Form>
+//       )}
+//     </Formik>
+//   );
+// }
+
+// export default form;
